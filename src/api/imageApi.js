@@ -12,5 +12,11 @@ export const imageApi = {
                 'Content-Type': 'multipart/form-data',
             },
         });
+    },
+    deleteImageById: (id) => {
+        return imageApiClient.delete(`/api/images/${id}`);
+    },
+    deleteAllImages: () => {
+        return imageApiClient.delete('/api/images');
     }
 };

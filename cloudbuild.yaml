@@ -1,0 +1,36 @@
+substitutions:
+  _SERVICE_NAME: ots-frontend-thumbnail-service
+  _REGION: asia-southeast1
+  _IMAGE_NAME: asia-southeast1-docker.pkg.dev/cdc-online-thumbnail-service/cdc-online-thumbnail-service-repo/ots-frontend-thumbnail-service
+
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t', '${_IMAGE_NAME}',
+        '.'
+      ]
+
+  # Step 2: Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE_NAME}']
+
+  # Step 3: Deploy the new version to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run', 'deploy', '${_SERVICE_NAME}',
+        '--image', '${_IMAGE_NAME}',
+        '--region', '${_REGION}',
+        '--platform', 'managed',
+        '--allow-unauthenticated' # Allow public access to the frontend
+      ]
+
+images:
+  - '${_IMAGE_NAME}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

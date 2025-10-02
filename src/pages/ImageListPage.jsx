@@ -29,9 +29,27 @@ const ImageListPage = () => {
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
-        if (file) {
-            handleUpload(file);
+        if (!file) {
+            return;
         }
+
+        // Client-side validation for file size (10MB)
+        const MAX_SIZE = 10 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            setUploadError('File is too large. The maximum size is 10MB.');
+            // Clear the file input
+            event.target.value = null;
+            return;
+        }
+
+        // Client-side validation for file type
+        const allowedTypes = ['image/png', 'image/jpeg'];
+        if (!allowedTypes.includes(file.type)) {
+            setUploadError('Invalid file type. Please upload a PNG or JPEG image.');
+            return;
+        }
+
+        handleUpload(file);
     };
 
     const handleUpload = async (file) => {
@@ -85,7 +103,7 @@ const ImageListPage = () => {
                     </button>
                     <label className={`btn btn-primary ${uploading ? 'disabled' : ''}`}>
                         <i className="bi bi-upload"></i> {uploading ? 'Uploading...' : 'Upload Image'}
-                        <input type="file" hidden onChange={handleFileChange} disabled={uploading} accept="image/png, image/jpeg, image/gif" />
+                        <input type="file" hidden onChange={handleFileChange} disabled={uploading} accept="image/png, image/jpeg" />
                     </label>
                 </div>
             </div>

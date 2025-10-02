@@ -27,7 +27,10 @@ const Navbar = () => {
                             <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>{getInitials(user.email)}</div>
                         </>
                     ) : (
-                        <Link to="/login" className="btn btn-primary">Login</Link>
+                        <>
+                            <Link to="/register" className="btn btn-outline-light me-2">Sign Up</Link>
+                            <Link to="/login" className="btn btn-primary">Login</Link>
+                        </>
                     )}
                 </div>
             </div>

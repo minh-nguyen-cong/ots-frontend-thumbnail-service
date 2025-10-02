@@ -1,0 +1,32 @@
+{
+    "navbar": {
+        "brand": "OTS",
+        "welcome": "Welcome, {{email}}",
+        "logout": "Logout",
+        "signUp": "Sign Up",
+        "login": "Login"
+    },
+    "home": {
+        "title": "Welcome to the Online Thumbnail System"
+    },
+    "login": {
+        "title": "Login",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Password",
+        "submit": "Login",
+        "loading": "Logging in...",
+        "error": "Failed to login. Please check your credentials."
+    },
+    "register": {
+        "title": "Register",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Password",
+        "submit": "Register",
+        "loading": "Registering...",
+        "error": "Failed to register. The user might already exist."
+    },
+    "images": {
+        "title": "Your Images",
+        "error": "Failed to fetch images. Make sure you are logged in and the API is running."
+    }
+}

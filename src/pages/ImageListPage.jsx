@@ -3,11 +3,13 @@ import { imageApi } from '../api/imageApi';
 
 const ImageListPage = () => {
     const [images, setImages] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [listLoading, setListLoading] = useState(true);
     const [error, setError] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState('');
 
-    useEffect(() => {
-        setLoading(true);
+    const fetchImages = () => {
+        setListLoading(true);
         imageApi.getImages()
             .then(response => {
                 setImages(response.data);
@@ -17,9 +19,35 @@ const ImageListPage = () => {
                 console.error(err);
             })
             .finally(() => {
-                setLoading(false);
+                setListLoading(false);
             });
+    };
+
+    useEffect(() => {
+        fetchImages();
     }, []);
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            handleUpload(file);
+        }
+    };
+
+    const handleUpload = async (file) => {
+        setUploading(true);
+        setUploadError('');
+        try {
+            await imageApi.uploadImage(file);
+            // Refresh the list to show the new image (which will likely be in a 'PENDING' or 'PROCESSING' state)
+            fetchImages();
+        } catch (err) {
+            setUploadError('Upload failed. Please try again.');
+            console.error(err);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const formatBytes = (bytes, decimals = 2) => {
         if (bytes === 0) return '0 Bytes';
@@ -43,16 +71,33 @@ const ImageListPage = () => {
         }
     }
 
-    if (loading) {
+    if (listLoading) {
         return <div className="container mt-5 text-center"><h2>Loading Images...</h2></div>;
     }
 
     return (
         <div className="container mt-5">
-            <h2>Your Images</h2>
-            {error && <div className="alert alert-danger">{error}</div>}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h2>Your Images</h2>
+                <div>
+                    <button className="btn btn-secondary me-2" onClick={fetchImages} disabled={listLoading}>
+                        <i className="bi bi-arrow-clockwise"></i> Reload
+                    </button>
+                    <label className={`btn btn-primary ${uploading ? 'disabled' : ''}`}>
+                        <i className="bi bi-upload"></i> {uploading ? 'Uploading...' : 'Upload Image'}
+                        <input type="file" hidden onChange={handleFileChange} disabled={uploading} accept="image/png, image/jpeg, image/gif" />
+                    </label>
+                </div>
+            </div>
 
-            {images.length > 0 ? (
+            {error && <div className="alert alert-danger">{error}</div>}
+            {uploadError && <div className="alert alert-danger">{uploadError}</div>}
+
+            {listLoading && images.length === 0 ? (
+                <div className="text-center">
+                    <div className="spinner-border" role="status"><span className="visually-hidden">Loading...</span></div>
+                </div>
+            ) : images.length > 0 ? (
                 <div className="table-responsive">
                     <table className="table table-hover align-middle">
                         <thead>

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { imageApi } from '../api/imageApi';
+import { useTranslation } from 'react-i18next';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const ImageListPage = () => {
     const [images, setImages] = useState([]);
@@ -7,6 +9,10 @@ const ImageListPage = () => {
     const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
+    const [deleting, setDeleting] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'single' | 'all', id?: number }
+    const { t } = useTranslation();
 
     const fetchImages = () => {
         setListLoading(true);
@@ -15,7 +21,7 @@ const ImageListPage = () => {
                 setImages(response.data);
             })
             .catch(err => {
-                setError('Failed to fetch images. Make sure you are logged in and the API is running.');
+                setError(t('images.error'));
                 console.error(err);
             })
             .finally(() => {
@@ -60,11 +66,46 @@ const ImageListPage = () => {
             // Refresh the list to show the new image (which will likely be in a 'PENDING' or 'PROCESSING' state)
             fetchImages();
         } catch (err) {
-            setUploadError('Upload failed. Please try again.');
+            setUploadError(t('images.uploadFailed'));
             console.error(err);
         } finally {
             setUploading(false);
         }
+    };
+
+    const handleDeleteOne = async (id) => {
+        setDeleteTarget({ type: 'single', id });
+        setShowModal(true);
+    };
+
+    const handleDeleteAll = async () => {
+        setDeleteTarget({ type: 'all' });
+        setShowModal(true);
+    };
+
+    const confirmDeletion = async () => {
+        setDeleting(true);
+        try {
+            if (deleteTarget.type === 'all') {
+                await imageApi.deleteAllImages();
+                setImages([]);
+            } else if (deleteTarget.type === 'single') {
+                await imageApi.deleteImageById(deleteTarget.id);
+                setImages(currentImages => currentImages.filter(image => image.id !== deleteTarget.id));
+            }
+        } catch (err) {
+            const errorMessage = deleteTarget.type === 'all' ? t('images.deleteAllFailed') : t('images.deleteFailed');
+            setError(errorMessage);
+            console.error(err);
+        } finally {
+            setDeleting(false);
+            closeModal();
+        }
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setDeleteTarget(null);
     };
 
     const formatBytes = (bytes, decimals = 2) => {
@@ -105,11 +146,23 @@ const ImageListPage = () => {
                         <i className="bi bi-upload"></i> {uploading ? 'Uploading...' : 'Upload Image'}
                         <input type="file" hidden onChange={handleFileChange} disabled={uploading} accept="image/png, image/jpeg" />
                     </label>
+                    <button className="btn btn-danger ms-2" onClick={handleDeleteAll} disabled={deleting || images.length === 0}>
+                        <i className="bi bi-trash"></i> Delete All
+                    </button>
                 </div>
             </div>
 
             {error && <div className="alert alert-danger">{error}</div>}
             {uploadError && <div className="alert alert-danger">{uploadError}</div>}
+
+            <ConfirmationModal
+                show={showModal}
+                onHide={closeModal}
+                onConfirm={confirmDeletion}
+                title={deleteTarget?.type === 'all' ? t('images.deleteConfirmation.titleAll') : t('images.deleteConfirmation.titleSingle')}
+                body={deleteTarget?.type === 'all' ? t('images.deleteConfirmation.bodyAll') : t('images.deleteConfirmation.bodySingle')}
+                isProcessing={deleting}
+            />
 
             {listLoading && images.length === 0 ? (
                 <div className="text-center">
@@ -126,6 +179,7 @@ const ImageListPage = () => {
                                 <th>Upload Date</th>
                                 <th>Status</th>
                                 <th>Thumbnail</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -151,13 +205,18 @@ const ImageListPage = () => {
                                             <button className="btn btn-sm btn-secondary" disabled>N/A</button>
                                         )}
                                     </td>
+                                    <td>
+                                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteOne(image.id)} disabled={deleting}>
+                                            <i className="bi bi-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             ) : (
-                !error && <p>You haven't uploaded any images yet.</p>
+                !error && <p>{t('images.empty')}</p>
             )}
         </div>
     );

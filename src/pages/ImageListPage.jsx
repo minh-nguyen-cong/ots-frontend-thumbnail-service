@@ -102,6 +102,7 @@ const ImageListPage = () => {
                     <table className="table table-hover align-middle">
                         <thead>
                             <tr>
+                                <th>Thumbnail Image</th>
                                 <th>File Name</th>
                                 <th>File Size</th>
                                 <th>Upload Date</th>
@@ -112,6 +113,15 @@ const ImageListPage = () => {
                         <tbody>
                             {images.map(image => (
                                 <tr key={image.id}>
+                                    <td>
+                                        {image.thumbnailStatus === 'DONE' && image.thumbnailUrl ? (
+                                            <img src={image.thumbnailUrl} alt={image.fileName} className="rounded" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+                                        ) : (
+                                            <div style={{ width: '60px', height: '60px', backgroundColor: '#e9ecef' }} className="rounded d-flex align-items-center justify-content-center text-muted">
+                                                <i className="bi bi-image" style={{ fontSize: '24px' }}></i>
+                                            </div>
+                                        )}
+                                    </td>
                                     <td>{image.fileName}</td>
                                     <td>{formatBytes(image.fileSize)}</td>
                                     <td>{new Date(image.createdAt).toLocaleString()}</td>

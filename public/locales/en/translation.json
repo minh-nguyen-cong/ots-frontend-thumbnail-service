@@ -1,6 +1,6 @@
 {
     "navbar": {
-        "brand": "OTS",
+        "brand": "Online Thumbnail System",
         "welcome": "Welcome, {{email}}",
         "logout": "Logout",
         "signUp": "Sign Up",

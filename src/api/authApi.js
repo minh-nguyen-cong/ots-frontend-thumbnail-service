@@ -1,13 +1,13 @@
-import { authApiClient } from './apiClient';
+import apiClient from './apiClient';
 
 export const authApi = {
     login: (email, password) => {
-        return authApiClient.post('/api/auth/login', { email, password });
+        return apiClient.post('/api/auth/login', { email, password });
     },
     register: (email, password) => {
-        return authApiClient.post('/api/auth/register', { email, password });
+        return apiClient.post('/api/auth/register', { email, password });
     },
     getProfile: () => {
-        return authApiClient.get('/api/auth/profile');
+        return apiClient.get('/api/auth/profile');
     }
 };
